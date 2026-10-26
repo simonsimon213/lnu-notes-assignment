@@ -1,21 +1,33 @@
 # Python
 .venv/
+venv/
 __pycache__/
 *.pyc
+*.py[cod]
 
 # Local settings and keys: never commit
 .env
+.env.*
 *.pem
+!.env.example
+*.tfvars
+*.tfvars.json
+*.key
+.aws/
+
 
 # Terraform. State and plans hold every value Terraform handled,
 # including the database password, in clear text.
 .terraform/
 .terraform.lock.hcl
+.terraform.tfstate.lock.info
 *.tfstate
 *.tfstate.*
 *.tfplan
+tfplan
 *.tfvars
 crash.log
+crash.*.log
 
 # Rendered from a template, so they hold real values
 *.rendered
@@ -27,3 +39,7 @@ trust.json
 # Downloads and system files
 *.pkg
 .DS_Store
+Thumbs.db
+*.swp
+*~
+/AWSCLIV2.pkg
