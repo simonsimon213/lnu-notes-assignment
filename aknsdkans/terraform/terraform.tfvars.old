@@ -1,5 +1,0 @@
-# Copy to terraform.tfvars and fill in. That file is git-ignored.
-region      = "eu-north-1"
-key_name    = "2dv705"
-admin_cidr  = "194.47.188.32" # curl https://checkip.amazonaws.com
-repo_url    = "https://github.com/simonsimon213/lnu-notes.git"
