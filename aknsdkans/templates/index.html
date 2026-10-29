@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>lnu-notes</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <header>
+    <h1>lnu-notes</h1>
+    <p class="meta">bucket <code>{{ bucket or '(unset)' }}</code> · region <code>{{ region }}</code>
+       · <a href="/healthz">/healthz</a></p>
+  </header>
+
+  <form method="post" action="/notes" enctype="multipart/form-data">
+    <input name="title" placeholder="Title" maxlength="120" required>
+    <textarea name="body" placeholder="Anything you want to remember" rows="3"></textarea>
+    <label class="file">Attach an image <input type="file" name="image" accept="image/*"></label>
+    <button type="submit">Save note</button>
+  </form>
+
+  {% if not notes %}
+    <p class="empty">No notes yet. The first one you save will be stored in MySQL,
+       and its image in S3.</p>
+  {% endif %}
+
+  <ul class="notes">
+    {% for note in notes %}
+      <li>
+        <h2>{{ note.title }}</h2>
+        {% if note.body %}<p>{{ note.body }}</p>{% endif %}
+        {% if note.image_url %}
+          <img src="{{ note.image_url }}" alt="">
+          <p class="meta">served through a presigned URL, valid five minutes</p>
+        {% elif note.image_key %}
+          <p class="meta warn">image {{ note.image_key }} could not be signed —
+             check the instance role</p>
+        {% endif %}
+        <p class="meta">#{{ note.id }} · {{ note.created_at }}</p>
+      </li>
+    {% endfor %}
+  </ul>
+</body>
+</html>

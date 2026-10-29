@@ -14,7 +14,6 @@ write_files:
     content: |
       DB_HOST=${db_host}
       DB_USER=lnu
-      DB_PASS=${db_pass}
       DB_NAME=lnunotes
       S3_BUCKET=${bucket}
       AWS_REGION=${region}
@@ -23,6 +22,21 @@ runcmd:
   - git clone ${repo} /opt/lnu-notes
   - python3 -m venv /opt/lnu-notes/.venv
   - /opt/lnu-notes/.venv/bin/pip install -r /opt/lnu-notes/requirements.txt
+  - |
+    /opt/lnu-notes/.venv/bin/python - <<'PY'
+    import time, boto3
+    for attempt in range(10):
+        try:
+            pw = boto3.client("ssm", region_name="${region}").get_parameter(
+                Name="/2dv705/db_password", WithDecryption=True)["Parameter"]["Value"]
+            break
+        except Exception as exc:
+            print("waiting for credentials:", exc); time.sleep(6)
+    else:
+        raise SystemExit("could not read /2dv705/db_password")
+    with open("/etc/lnu-notes.env", "a") as f:
+        f.write(f"DB_PASS={pw}\n")
+    PY
   - install -m 644 /opt/lnu-notes/deploy/lnu-notes.service /etc/systemd/system/
   - systemctl daemon-reload
   - systemctl enable --now lnu-notes

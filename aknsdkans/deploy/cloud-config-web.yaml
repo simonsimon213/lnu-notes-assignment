@@ -1,0 +1,33 @@
+#cloud-config
+# Declarative first-boot configuration for the WEB instance.
+# Compare this with deploy/web-userdata.sh, which does the same job imperatively.
+# This says WHAT the machine should look like; the script says HOW to get there.
+
+package_update: true
+packages:
+  - python3-venv
+  - python3-pip
+  - git
+
+write_files:
+  - path: /etc/lnu-notes.env
+    permissions: '0600'
+    owner: root:root
+    content: |
+      DB_HOST=CHANGE-ME-private-ip-of-db-instance
+      DB_USER=lnu
+      DB_PASS=CHANGE-ME
+      DB_NAME=lnunotes
+      S3_BUCKET=CHANGE-ME-your-globally-unique-bucket
+      AWS_REGION=eu-north-1
+
+runcmd:
+  - git clone https://github.com/CHANGE-ME/lnu-notes.git /opt/lnu-notes
+  - python3 -m venv /opt/lnu-notes/.venv
+  - /opt/lnu-notes/.venv/bin/pip install -r /opt/lnu-notes/requirements.txt
+  - install -m 644 /opt/lnu-notes/deploy/lnu-notes.service /etc/systemd/system/
+  - systemctl daemon-reload
+  - systemctl enable --now lnu-notes
+
+# Nothing here configures AWS credentials, because nothing should.
+# The instance role supplies them, and they expire on their own.

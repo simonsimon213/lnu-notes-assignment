@@ -1,0 +1,27 @@
+#cloud-config
+# Declarative first-boot configuration for the DATABASE instance.
+
+package_update: true
+packages:
+  - mariadb-server
+
+write_files:
+  - path: /etc/mysql/mariadb.conf.d/99-bind.cnf
+    content: |
+      [mysqld]
+      bind-address = 0.0.0.0
+  - path: /root/init.sql
+    permissions: '0600'
+    content: |
+      CREATE DATABASE IF NOT EXISTS lnunotes;
+      CREATE USER IF NOT EXISTS 'lnu'@'10.0.%' IDENTIFIED BY 'CHANGE-ME';
+      GRANT ALL PRIVILEGES ON lnunotes.* TO 'lnu'@'10.0.%';
+      FLUSH PRIVILEGES;
+
+runcmd:
+  - systemctl restart mariadb
+  - mysql < /root/init.sql
+  - rm -f /root/init.sql
+
+# bind-address 0.0.0.0 does not make this database reachable.
+# The security group decides that, and it is the only thing that does.
